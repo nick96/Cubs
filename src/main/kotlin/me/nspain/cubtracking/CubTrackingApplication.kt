@@ -12,7 +12,7 @@ import me.nspain.cubtracking.errors.CubTrackingError
 import org.slf4j.event.Level
 import java.text.DateFormat
 
-fun Application.main(args: Array<String>) {
+fun Application.main() {
     install(DefaultHeaders)
     install(Compression)
     install(ConditionalHeaders)
