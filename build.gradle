@@ -1,5 +1,5 @@
 group 'me.nspain.cubtracking'
-version '0.0.1'
+version '0.0.1-SNAPSHOT'
 
 buildscript {
     ext.kotlin_version = '1.3.31'
@@ -8,6 +8,8 @@ buildscript {
     ext.kodein_version = '5.2.0'
     ext.logback_version = '1.2.3'
     ext.junit_version = '4.12'
+    ext.config4k_version = '0.4.1'
+    ext.spek_version = '2.0.4'
 
     repositories {
         mavenCentral()
@@ -22,7 +24,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'application'
 
-mainClassName = "me.nspain.cubtracking.MainKt"
+mainClassName = "me.nspain.cubtracking.CubTrackingApplicationKt"
 
 sourceSets {
     main.kotlin.srcDirs = [ 'src/main/kotlin' ]
@@ -36,6 +38,7 @@ compileTestKotlin { kotlinOptions.jvmTarget = "1.8" }
 repositories {
     mavenCentral()
     jcenter()
+    maven { url "https://dl.bintray.com/spekframework/spek/" }
 }
 
 dependencies {
@@ -43,10 +46,34 @@ dependencies {
 
     implementation group: 'io.ktor', name: 'ktor-server-netty', version: ktor_version
     implementation group: 'io.ktor', name: 'ktor-gson', version: ktor_version
+    implementation group: 'io.ktor', name: 'ktor-auth', version: ktor_version
+    implementation group: 'io.ktor', name: 'ktor-auth-jwt', version: ktor_version
+    implementation group: 'io.ktor', name: 'ktor-client-core', version: ktor_version
+    implementation group: 'io.ktor', name: 'ktor-client-apache', version: ktor_version
+    implementation group: 'io.ktor', name: 'ktor-locations', version: ktor_version
 
     implementation group: 'org.kodein.di', name: 'kodein-di-generic-jvm', version: kodein_version
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
     implementation group: 'org.apache.solr', name: 'solr-solrj', version: solrj_version
+    implementation group: 'io.github.config4k', name: 'config4k', version: config4k_version
 
-    testCompile group: 'junit', name: 'junit', version: junit_version
+    testImplementation group: 'junit', name: 'junit', version: junit_version
+    testImplementation group: 'org.spekframework.spek2', name: 'spek-dsl-jvm', version: spek_version
+    testImplementation group: 'io.ktor', name: 'ktor-server-test-host', version: ktor_version
+    testImplementation group: 'io.ktor', name: 'ktor-client-mock-jvm', version: ktor_version
+    testImplementation group: 'io.ktor', name: 'ktor-server-tests', version: ktor_version
+    testImplementation "io.ktor:ktor-client-mock:$ktor_version"
+    testImplementation "io.ktor:ktor-client-mock-jvm:$ktor_version"
+
+    testRuntimeOnly group: 'org.spekframework.spek2', name: 'spek-runner-junit5', version: spek_version
+    testRuntimeOnly group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'spek2'
+    }
+    testLogging {
+        events "PASSED", "STARTED", "FAILED", "SKIPPED"
+    }
 }
