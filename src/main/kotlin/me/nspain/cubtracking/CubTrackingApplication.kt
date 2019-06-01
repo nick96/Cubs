@@ -1,20 +1,21 @@
 package me.nspain.cubtracking
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.typesafe.config.ConfigFactory
 import io.github.config4k.extract
 import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.application.log
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
+import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
 import io.ktor.gson.gson
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.host
-import io.ktor.request.port
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.server.engine.embeddedServer
@@ -24,17 +25,14 @@ import io.ktor.util.KtorExperimentalAPI
 import me.nspain.cubtracking.errors.CubTrackingError
 import me.nspain.cubtracking.repository.Repository
 import me.nspain.cubtracking.repository.SolrRepository
-import me.nspain.cubtracking.routes.achievementBadge
-import me.nspain.cubtracking.routes.boomerang
-import me.nspain.cubtracking.routes.cub
-import me.nspain.cubtracking.routes.greyWolf
-import me.nspain.cubtracking.security.GoogleJWTVerifier
-import me.nspain.cubtracking.security.JWTVerifier
+import me.nspain.cubtracking.routes.*
+import me.nspain.cubtracking.security.GoogleTokenVerifier
+import me.nspain.cubtracking.security.TokenVerifier
 import org.slf4j.event.Level
 import java.text.DateFormat
 
 data class SolrConfig(val connectionString: String)
-data class JWTConfig(val secret: String)
+data class JWTConfig(val secret: String, val issuer: String)
 
 @InternalAPI
 @KtorExperimentalAPI
@@ -51,16 +49,21 @@ fun Application.cubTracking() {
     val solrCfg = cfg.extract<SolrConfig>("solr")
     val jwtCfg = cfg.extract<JWTConfig>("jwt")
 
-    cubTracking(SolrRepository(
-            solrCfg.connectionString),
-            GoogleJWTVerifier(jwtCfg.secret))
+    val repo = SolrRepository(solrCfg.connectionString)
+    val algo = Algorithm.HMAC256(jwtCfg.secret)
+    val tokenVerifier = GoogleTokenVerifier()
+
+    cubTracking(repo, algo, tokenVerifier, jwtCfg.issuer)
 }
 
 @InternalAPI
 @KtorExperimentalAPI
 fun Application.cubTracking(
         repository: Repository,
-        jwtVerifier: JWTVerifier) {
+        algorithm: Algorithm,
+        tokenVerifier: TokenVerifier,
+        issuer: String) {
+
     install(DefaultHeaders)
     install(Compression)
     install(ConditionalHeaders)
@@ -77,9 +80,8 @@ fun Application.cubTracking(
             environment.log.error(cause.toString())
             val err = CubTrackingError(
                     call.request.local.uri,
-                    cause.toString(),
-                    HttpStatusCode.InternalServerError,
-                    cause
+                    "There was an issue on the server side",
+                    HttpStatusCode.InternalServerError
             )
             call.respond(err)
         }
@@ -98,25 +100,22 @@ fun Application.cubTracking(
 
     install(Authentication) {
         jwt("jwt") {
-            verifier(jwtVerifier.verifier)
+            verifier(JWT.require(algorithm).withIssuer(issuer).build())
+            validate {
+                JWTPrincipal(it.payload)
+            }
         }
     }
 
 
     install(Routing) {
+        authentication(tokenVerifier, issuer, algorithm)
         authenticate("jwt") {
-            cub(repository)
+            cub(repository.cubRepository)
             greyWolf(repository)
             boomerang(repository)
             achievementBadge(repository)
         }
     }
 
-}
-
-private fun ApplicationCall.redirectUrl(path: String): String {
-    val defaultPort = if (request.origin.scheme == "http") 80 else 443
-    val hostPort = request.host() + request.port().let { port -> if (port == defaultPort) "" else ":$port" }
-    val protocol = request.origin.scheme
-    return "$protocol://$hostPort$path"
 }
