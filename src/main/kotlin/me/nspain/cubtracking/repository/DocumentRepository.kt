@@ -1,6 +1,6 @@
 package me.nspain.cubtracking.repository
 
-interface DocumentRepository<D, U> {
+interface DocumentRepository<D> {
     /** Get all available Cub documents. */
     fun get(): List<D>
 
@@ -11,7 +11,7 @@ interface DocumentRepository<D, U> {
     fun filter(predicate: (D) -> Boolean): List<D>
 
     /** Update the Cub document at [id] with [update]. */
-    fun update(id: Long, update: U.() -> Unit): D?
+    fun update(id: Long, update: D.() -> Unit): D?
 
     /** Replace the Cub document at [id] with [replacement]. */
     fun replace(id: Long, replacement: D): D?
@@ -24,4 +24,6 @@ interface DocumentRepository<D, U> {
 
     /** Append [elem] to the collection of Cub documents. */
     fun append(elem: D): D
+
+    operator fun plus(elem: D): DocumentRepository<D>
 }

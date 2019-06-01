@@ -3,7 +3,7 @@ package me.nspain.cubtracking.repository
 import me.nspain.cubtracking.schemas.Cub
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 
-class CubSolrRepository(val client: HttpSolrClient?): DocumentRepository<Cub, Cub.Update> {
+class CubSolrRepository(val client: HttpSolrClient?): DocumentRepository<Cub> {
     /** Get all available Cub documents. */
     override fun get(): List<Cub> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -20,7 +20,7 @@ class CubSolrRepository(val client: HttpSolrClient?): DocumentRepository<Cub, Cu
     }
 
     /** Update the Cub document at [id] with [update]. */
-    override fun update(id: Long, update: Cub.Update.() -> Unit): Cub? {
+    override fun update(id: Long, update: Cub.() -> Unit): Cub? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -44,4 +44,7 @@ class CubSolrRepository(val client: HttpSolrClient?): DocumentRepository<Cub, Cu
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun plus(elem: Cub): CubSolrRepository {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }

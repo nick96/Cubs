@@ -51,7 +51,7 @@ class DummyRepository(cubData: List<Cub>) : Repository {
     override val connectionString = "test.repository"
 }
 
-class DummyCubRepository(private var data: List<Cub>) : DocumentRepository<Cub, Cub.Update> {
+class DummyCubRepository(private var data: List<Cub>) : DocumentRepository<Cub> {
     /** Get all available Cub documents. */
     override fun get(): List<Cub> {
         return data
@@ -68,10 +68,10 @@ class DummyCubRepository(private var data: List<Cub>) : DocumentRepository<Cub, 
     }
 
     /** Update the Cub document at [id] with [update]. */
-    override fun update(id: Long, update: Cub.Update.() -> Unit): Cub? {
+    override fun update(id: Long, update: Cub.() -> Unit): Cub? {
         val cub = data.firstOrNull { it.id == id } ?: return null
 
-        val cubUpdate = Cub.Update().apply(update)
+        val cubUpdate = Cub().apply(update)
         cub.name = cubUpdate.name ?: cub.name
         cub.achievementBadges = cubUpdate.achievementBadges ?: cub.achievementBadges
         cub.specialInterestBadges = cubUpdate.specialInterestBadges ?: cub.specialInterestBadges
@@ -123,6 +123,11 @@ class DummyCubRepository(private var data: List<Cub>) : DocumentRepository<Cub, 
         )
         data += cub
         return cub
+    }
+
+    override fun plus(elem: Cub): DummyCubRepository {
+        data += elem
+        return this
     }
 
 }

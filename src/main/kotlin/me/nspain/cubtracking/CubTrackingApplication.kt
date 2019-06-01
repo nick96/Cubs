@@ -80,9 +80,9 @@ fun Application.cubTracking(
             environment.log.error(cause.toString())
             val err = CubTrackingError(
                     call.request.local.uri,
-                    "There was an issue on the server side",
-                    HttpStatusCode.InternalServerError
-            )
+                    HttpStatusCode.InternalServerError,
+                    "There was an issue on the server side"
+                    )
             call.respond(err)
         }
     }

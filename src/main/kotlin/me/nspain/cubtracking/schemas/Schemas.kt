@@ -1,34 +1,30 @@
 // Resources returned by the API
 package me.nspain.cubtracking.schemas
 
+import am.ik.yavi.builder.ValidatorBuilder
+import am.ik.yavi.builder.konstraint
+import am.ik.yavi.core.ConstraintViolations
+import am.ik.yavi.core.Validator
 import java.io.Serializable
 import java.util.*
 
 // Cub completing the various achievements.
-class Cub(
-        val id: Long,
+data class Cub(
+        val id: Long? = null,
         // Cub's name.
-        var name: String,
+        var name: String? = null,
         // Collection of achievement badges the cub has attained.
-        var achievementBadges: List<AchievementBadge> = listOf(),
+        var achievementBadges: List<AchievementBadge>? = null,
         // Collection of special interest badges the cub has attained.
-        var specialInterestBadges: Collection<SpecialInterestBadge> = listOf(),
+        var specialInterestBadges: Collection<SpecialInterestBadge>? = null,
         // Cub's bronze boomerang progress.
         var bronzeBoomerang: Boomerang? = null,
         // Cub's silver boomerang progress.
         var silverBoomerang: Boomerang? = null,
         // Cub's gold boomerang progress.
         var goldBoomerang: Boomerang? = null
-): Serializable {
-    class Update {
-        var name: String? = null
-        var achievementBadges: List<AchievementBadge>? = null
-        var specialInterestBadges: List<SpecialInterestBadge>? = null
-        var bronzeBoomerang: Boomerang? = null
-        var silverBoomerang: Boomerang? = null
-        var goldBoomerang: Boomerang? = null
-    }
-}
+)
+
 
 // Achievement badge.
 data class AchievementBadge(
