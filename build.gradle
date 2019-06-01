@@ -10,6 +10,7 @@ buildscript {
     ext.junit_version = '4.12'
     ext.config4k_version = '0.4.1'
     ext.spek_version = '2.0.4'
+    ext.kluent_version = '1.49'
 
     repositories {
         mavenCentral()
@@ -44,6 +45,7 @@ repositories {
 dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
 
+    // Ktor stuff
     implementation group: 'io.ktor', name: 'ktor-server-netty', version: ktor_version
     implementation group: 'io.ktor', name: 'ktor-gson', version: ktor_version
     implementation group: 'io.ktor', name: 'ktor-auth', version: ktor_version
@@ -52,18 +54,22 @@ dependencies {
     implementation group: 'io.ktor', name: 'ktor-client-apache', version: ktor_version
     implementation group: 'io.ktor', name: 'ktor-locations', version: ktor_version
 
-    implementation group: 'org.kodein.di', name: 'kodein-di-generic-jvm', version: kodein_version
+    // Config and logging
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
-    implementation group: 'org.apache.solr', name: 'solr-solrj', version: solrj_version
     implementation group: 'io.github.config4k', name: 'config4k', version: config4k_version
 
+    // Functionality
+    implementation group: 'org.apache.solr', name: 'solr-solrj', version: solrj_version
+
+    // Testing
     testImplementation group: 'junit', name: 'junit', version: junit_version
     testImplementation group: 'org.spekframework.spek2', name: 'spek-dsl-jvm', version: spek_version
     testImplementation group: 'io.ktor', name: 'ktor-server-test-host', version: ktor_version
     testImplementation group: 'io.ktor', name: 'ktor-client-mock-jvm', version: ktor_version
     testImplementation group: 'io.ktor', name: 'ktor-server-tests', version: ktor_version
-    testImplementation "io.ktor:ktor-client-mock:$ktor_version"
-    testImplementation "io.ktor:ktor-client-mock-jvm:$ktor_version"
+    testImplementation group: 'io.ktor', name: 'ktor-client-mock', version: ktor_version
+    testImplementation group: 'io.ktor', name: 'ktor-client-mock-jvm', version: ktor_version
+    testImplementation group: 'org.amshove.kluent', name: 'kluent', version: kluent_version
 
     testRuntimeOnly group: 'org.spekframework.spek2', name: 'spek-runner-junit5', version: spek_version
     testRuntimeOnly group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
