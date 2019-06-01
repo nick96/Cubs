@@ -1,14 +1,19 @@
 package me.nspain.cubtracking.routes
 
+import am.ik.yavi.builder.ValidatorBuilder
+import am.ik.yavi.builder.konstraint
+import am.ik.yavi.core.Validator
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
+import io.ktor.request.uri
 import io.ktor.response.respond
 import io.ktor.routing.*
+import me.nspain.cubtracking.errors.CubTrackingError
 import me.nspain.cubtracking.repository.DocumentRepository
 import me.nspain.cubtracking.schemas.Cub
 
-fun Route.cub(repository: DocumentRepository<Cub, Cub.Update>) {
+fun Route.cub(repository: DocumentRepository<Cub>) {
     route("/cubs") {
         // GET /cubs
         // Get all registered cubs
@@ -36,11 +41,25 @@ fun Route.cub(repository: DocumentRepository<Cub, Cub.Update>) {
         // Create a new cub
         post("/") {
             val body = call.receive<Cub>()
-            val cub = repository.append(body)
-            call.respond(
-                    status = HttpStatusCode.Created,
-                    message = cub
-            )
+            val validator: Validator<Cub> = ValidatorBuilder.of<Cub>()
+                    .konstraint(Cub::id) {
+                        isNull()
+                    }
+                    .konstraint(Cub::name) {
+                        notNull()
+                    }
+                    .build()
+            val violations = validator.validate(body)
+            if (!violations.isValid) {
+                call.respond(HttpStatusCode.BadRequest, CubTrackingError(
+                        call.request.local.uri,
+                        HttpStatusCode.BadRequest,
+                        mapOf("errors" to violations.map { it.message() })
+                ))
+            } else {
+                val cub = repository.append(body)
+                call.respond(HttpStatusCode.Created, cub)
+            }
         }
 
         // PUT /cubs/{id}
@@ -48,24 +67,26 @@ fun Route.cub(repository: DocumentRepository<Cub, Cub.Update>) {
         put("/{id}") {
             val id = call.parameters["id"]!!.toLong()
             val body = call.receive<Cub>()
-            val newCub = repository.replace(id, body)
-            if (newCub == null) call.respond(HttpStatusCode.NotFound) else call.respond(newCub)
-        }
-
-        // PATCH /cubs/{id}
-        // Update a registered cub with ID.
-        patch("/{id}") {
-            val id = call.parameters["id"]!!.toLong()
-            val body = call.receive<Cub.Update>()
-            val updatedCub = repository.update(id) {
-                name = body.name
-                achievementBadges = body.achievementBadges
-                specialInterestBadges = body.specialInterestBadges
-                bronzeBoomerang = body.bronzeBoomerang
-                silverBoomerang = body.silverBoomerang
-                goldBoomerang = body.goldBoomerang
+            val validator = ValidatorBuilder<Cub>()
+                    .konstraint(Cub::id) {
+                        isNull()
+                    }
+                    .build()
+            val violations = validator.validate(body)
+            if (!violations.isValid) {
+                call.respond(HttpStatusCode.BadRequest, CubTrackingError(
+                        call.request.local.uri,
+                        HttpStatusCode.BadRequest,
+                        mapOf("errors" to violations.map { it.message() })
+                ))
+            } else {
+                val newCub = repository.replace(id, body)
+                if (newCub == null) call.respond(HttpStatusCode.NotFound, CubTrackingError(
+                        call.request.local.uri,
+                        HttpStatusCode.NotFound,
+                        "No Cub document with ID $id was not found."
+                )) else call.respond(newCub)
             }
-            if (updatedCub == null) call.respond(HttpStatusCode.NotFound) else call.respond(updatedCub)
         }
 
         // DELETE /cubs/{id}
