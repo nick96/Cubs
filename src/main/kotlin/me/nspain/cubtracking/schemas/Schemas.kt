@@ -5,21 +5,30 @@ import java.io.Serializable
 import java.util.*
 
 // Cub completing the various achievements.
-data class Cub(
+class Cub(
         val id: Long,
         // Cub's name.
-        val name: String,
+        var name: String,
         // Collection of achievement badges the cub has attained.
-        val achievementBadges: List<AchievementBadge>,
+        var achievementBadges: List<AchievementBadge> = listOf(),
         // Collection of special interest badges the cub has attained.
-        val specialInterestBadges: Collection<SpecialInterestBadge>,
+        var specialInterestBadges: Collection<SpecialInterestBadge> = listOf(),
         // Cub's bronze boomerang progress.
-        val bronzeBoomerang: Boomerang?,
+        var bronzeBoomerang: Boomerang? = null,
         // Cub's silver boomerang progress.
-        val silverBoomerang: Boomerang?,
+        var silverBoomerang: Boomerang? = null,
         // Cub's gold boomerang progress.
-        val goldBoomerang: Boomerang?
-) : Serializable
+        var goldBoomerang: Boomerang? = null
+): Serializable {
+    class Update {
+        var name: String? = null
+        var achievementBadges: List<AchievementBadge>? = null
+        var specialInterestBadges: List<SpecialInterestBadge>? = null
+        var bronzeBoomerang: Boomerang? = null
+        var silverBoomerang: Boomerang? = null
+        var goldBoomerang: Boomerang? = null
+    }
+}
 
 // Achievement badge.
 data class AchievementBadge(
