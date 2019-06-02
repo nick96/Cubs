@@ -26,7 +26,19 @@ data class CubID(val id: Long)
 @KtorExperimentalLocationsAPI
 fun Route.cub(repository: DocumentRepository<Cub>) {
     // GET /cubs
-    // Get all registered cubs
+    getCubs(repository)
+    // GET /cubs/{id}
+    getCubById(repository)
+    // POST /cubs
+    createCub(repository)
+    // PUT /cubs/{id}
+    replaceCub(repository)
+    // DELETE /cubs/{id}
+    deleteCubById(repository)
+}
+
+@KtorExperimentalLocationsAPI
+fun Route.getCubs(repository: DocumentRepository<Cub>) {
     get<Cubs> {
         val cubs = repository.filter {
             var ok = true
@@ -38,16 +50,18 @@ fun Route.cub(repository: DocumentRepository<Cub>) {
 
         if (cubs.isEmpty()) call.respond(HttpStatusCode.NotFound) else call.respond(cubs)
     }
+}
 
-    // GET /cubs/{id}
-    // Get a registered but with ID.
+@KtorExperimentalLocationsAPI
+fun Route.getCubById(repository: DocumentRepository<Cub>) {
     get<CubID> {
         val cub = repository[it.id]
         if (cub == null) call.respond(HttpStatusCode.NotFound) else call.respond(cub)
     }
+}
 
-    // POST /cubs
-    // Create a new cub
+@KtorExperimentalLocationsAPI
+fun Route.createCub(repository: DocumentRepository<Cub>) {
     post<Cubs> {
         val body = call.receive<Cub>()
         val validator: Validator<Cub> = ValidatorBuilder.of<Cub>()
@@ -70,8 +84,10 @@ fun Route.cub(repository: DocumentRepository<Cub>) {
             call.respond(HttpStatusCode.Created, cub)
         }
     }
+}
 
-    // PUT /cubs/{id}
+@KtorExperimentalLocationsAPI
+fun Route.replaceCub(repository: DocumentRepository<Cub>) {
     // Replace registered cub with ID.
     put<CubID> {
         val body = call.receive<Cub>()
@@ -96,8 +112,10 @@ fun Route.cub(repository: DocumentRepository<Cub>) {
             )) else call.respond(newCub)
         }
     }
+}
 
-    // DELETE /cubs/{id}
+@KtorExperimentalLocationsAPI
+fun Route.deleteCubById(repository: DocumentRepository<Cub>) {
     // Delete a registered cub with ID.
     delete<CubID> {
         val deletedCub = repository.delete(it.id)
