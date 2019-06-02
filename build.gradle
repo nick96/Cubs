@@ -32,6 +32,20 @@ mainClassName = "me.nspain.cubtracking.CubTrackingApplicationKt"
 sourceSets {
     main.kotlin.srcDirs = [ 'src/main/kotlin' ]
     main.resources.srcDirs = [ 'resources' ]
+
+    integrationTest {
+        kotlin {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/kotlin')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testIntegration
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 sourceCompatibility = 1.8
@@ -91,4 +105,10 @@ shadowJar {
     manifest {
         attributes 'Main-Class': mainClassName
     }
+}
+
+task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
 }
