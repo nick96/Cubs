@@ -16,6 +16,9 @@ import io.ktor.features.*
 import io.ktor.gson.gson
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.locations.Location
+import io.ktor.locations.Locations
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.server.engine.embeddedServer
@@ -33,6 +36,7 @@ import java.text.DateFormat
 
 data class SolrConfig(val connectionString: String)
 data class JWTConfig(val secret: String, val issuer: String)
+
 
 @InternalAPI
 @KtorExperimentalAPI
@@ -68,6 +72,7 @@ fun Application.cubTracking(
     install(Compression)
     install(ConditionalHeaders)
     install(AutoHeadResponse)
+    install(Locations)
 
     install(CORS) {
         anyHost()
