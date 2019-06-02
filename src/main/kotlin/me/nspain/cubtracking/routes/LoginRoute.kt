@@ -27,7 +27,7 @@ fun Route.authentication(tokenVerifier: TokenVerifier, issuer: String, algorithm
                         .withClaim("id", resp.id)
                         .withExpiresAt(Date(System.currentTimeMillis() + 36_000_000))
                         .sign(algorithm)
-                call.respond(AuthRequest(token))
+                call.respond(AuthResponse(token))
             } else {
                 call.respond(UnauthorizedResponse())
             }
