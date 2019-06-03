@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  api_build:
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -21,9 +21,19 @@ jobs:
       - store_artifacts:
           path: build/resources
           destination: resources
+  frontend_build:
+    docker:
+      - image: circleci/node:8
+    steps:
+      - checkout
+      - run: yarn test
+      - run: docker build -t quay.io/nick96/cub-tracking-frontend:${CIRCLE_SHA1} -f docker/Dockerfile .
+      - run: ./docker/smoke_test.sh
+
 
 workflows:
   version: 2
   test-build:
     jobs:
-      - build
+      - api_build
+      - frontend_build
