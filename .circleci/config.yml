@@ -5,6 +5,7 @@ jobs:
       - image: circleci/openjdk:8-jdk
     steps:
       - checkout
+      - run: cd api/
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "build.gradle" }}
@@ -26,6 +27,7 @@ jobs:
       - image: circleci/node:8
     steps:
       - checkout
+      - run: cd frontend/
       - run: yarn test
       - run: docker build -t quay.io/nick96/cub-tracking-frontend:${CIRCLE_SHA1} -f docker/Dockerfile .
       - run: ./docker/smoke_test.sh
