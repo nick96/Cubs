@@ -5,32 +5,33 @@ jobs:
       - image: circleci/openjdk:8-jdk
     steps:
       - checkout
-      - run: cd api/
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "build.gradle" }}
-            - v1-dependencies
-      - run: gradle dependencies
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: v1-dependencies-{{ checksum "build.gradle" }}
-      - run: ./gradlew clean ktlint test
+      - run:
+          name: Clean lint and test
+          command: ./gradlew clean ktlint test
+          working_directory: api/
       - store_artifacts:
-          path: build/distributions
+          path: api/build/distributions
           destination: jars
       - store_artifacts:
-          path: build/resources
+          path: api/build/resources
           destination: resources
   frontend_build:
     docker:
       - image: circleci/node:8
     steps:
       - checkout
-      - run: cd frontend/
-      - run: yarn test
-      - run: docker build -t quay.io/nick96/cub-tracking-frontend:${CIRCLE_SHA1} -f docker/Dockerfile .
-      - run: ./docker/smoke_test.sh
+      - run:
+          name: Run tests
+          command: yarn test
+          working_directory: frontend
+      - run:
+          name: Build docker image
+          command: docker build -t quay.io/nick96/cub-tracking-frontend:${CIRCLE_SHA1} -f docker/Dockerfile .
+          working_directory: frontend
+      - run:
+          name: Run smoke tests
+          command: ./docker/smoke_test.sh
+          working_directory: frontend
 
 
 workflows:
