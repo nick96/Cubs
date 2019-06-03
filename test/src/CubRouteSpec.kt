@@ -23,9 +23,6 @@ import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-private val Url.hostWithPortIfRequired: String get() = if (port == protocol.defaultPort) host else hostWithPort
-private val Url.fullUrl: String get() = "${protocol.name}://$hostWithPortIfRequired$fullPath"
-
 @InternalAPI
 @KtorExperimentalAPI
 object CubRouteAuthSpec : Spek({
@@ -76,7 +73,7 @@ object CubRouteGetSpec : Spek({
     val data = arrayOf(1, 2, 3, 4, 5).map {
         Cub(it.toLong(), "cub${it}")
     }
-    val issuer = "test"
+    val issuer = ""
     withServer(repositoryData = data, algorithm = algo, tokenVerifier = DummyAlwaysTrueTokenVerifier(), issuer = issuer) {
         val token = JWT.create().withIssuer(issuer).sign(algo)!!
         describe("GET /cubs") {
@@ -144,7 +141,7 @@ object CubRoutePostSpec : Spek({
     val data = arrayOf(1, 2, 3, 4, 5).map {
         Cub(it.toLong(), "cub${it}")
     }
-    val issuer = "test"
+    val issuer = ""
     withServer(repositoryData = data, algorithm = algo, tokenVerifier = DummyAlwaysTrueTokenVerifier(), issuer = issuer) {
         val token = JWT.create().withIssuer(issuer).sign(algo)!!
         describe("POST /cubs") {
@@ -194,7 +191,7 @@ object CubRoutePutSpec : Spek({
     val data = arrayOf(1, 2, 3, 4, 5).map {
         Cub(it.toLong(), "cub${it}")
     }
-    val issuer = "test"
+    val issuer = ""
     withServer(repositoryData = data, algorithm = algo, tokenVerifier = DummyAlwaysTrueTokenVerifier(), issuer = issuer) {
         val token = JWT.create().withIssuer(issuer).sign(algo)!!
         describe("PUT /cubs/{id}") {
@@ -253,14 +250,11 @@ object CubRoutePutSpec : Spek({
 
 @InternalAPI
 object CubRouteDeleteSpec : Spek({
-    val gson = GsonBuilder()
-            .setPrettyPrinting()
-            .create()
     val algo = Algorithm.HMAC256("secret")
     val data = arrayOf(1, 2, 3, 4, 5).map {
         Cub(it.toLong(), "cub${it}")
     }
-    val issuer = "test"
+    val issuer = ""
     withServer(repositoryData = data, algorithm = algo, tokenVerifier = DummyAlwaysTrueTokenVerifier(), issuer = issuer) {
         val token = JWT.create().withIssuer(issuer).sign(algo)!!
         describe("DELETE /cubs/{id}") {

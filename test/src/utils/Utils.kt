@@ -21,7 +21,7 @@ import me.nspain.cubtracking.security.User
 fun withServer(repositoryData: List<Cub> = listOf(),
                algorithm: Algorithm = Algorithm.HMAC256("secret"),
                tokenVerifier: TokenVerifier = DummyAlwaysFalseTokenVerifier(),
-               issuer: String = "test",
+               issuer: String = "",
                block: TestApplicationEngine.() -> Unit) {
     val engine = TestApplicationEngine(createTestEnvironment())
     val repo = DummyRepository(repositoryData)

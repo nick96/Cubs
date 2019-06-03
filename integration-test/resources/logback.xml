@@ -9,6 +9,6 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="io.netty" level="WARN"/>
-    <logger name="me.nspain.cubtracking" level="INFO"/>
+    <logger name="io.netty" level="DEBUG"/>
+    <logger name="me.nspain.cubtracking" level="DEBUG"/>
 </configuration>
