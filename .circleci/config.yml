@@ -35,6 +35,7 @@ jobs:
       - image: docker:17.05.0-ce-git
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: Build docker image
           command: docker build -t quay.io/nick96/cub-tracking-frontend:${CIRCLE_SHA1} -f docker/Dockerfile .
