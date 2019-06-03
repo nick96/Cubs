@@ -21,6 +21,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          command: yarn install --frozen-lockfile
+          working_directory: frontend
+      - run:
           name: Run tests
           command: yarn test
           working_directory: frontend
