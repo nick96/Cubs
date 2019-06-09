@@ -1,56 +1,110 @@
-version: 2
+version: 2.1
+
+commands:
+  install_docker_compose:
+    description: Install Docker Compose
+    steps:
+      - run:
+          name: Install pre-requisites
+          command: apk add py-pip python-dev libffi-dev openssl-dev gcc libc-dev make
+      - run:
+          name: Install docker-compose
+          command: pip install docker-compose
+
+  api_run:
+    description: Run a command using api/ as the working directory
+    parameters:
+      name:
+        type: string
+      command:
+        type: string
+    steps:
+      - run:
+        name: << parameters.name >>
+        command: << parameters.command >>
+        working_directory: api
+
+  frontend_run:
+    description: Run a command using frontend/ as the working directory
+    parameters:
+      name:
+        type: string
+      command:
+        type: string
+    steps:
+      - run:
+          name: << parameters.name >>
+          command: << paramters.command >>
+          working_directory: frontend
+
+  push_to_quayio:
+    description: Push a docker image to quay.io
+    parameters:
+      name:
+        type: string
+      tag:
+        type: string
+      branch:
+        type: string
+    steps:
+      - run:
+          name: Push api Docker image to quay.io
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "<< parameters.branch >>" ]
+            then
+              docker login -u "${QUAYIO_USR}" -p "${QUAYIO_PSW}"
+              docker tag "<< parameters.name >>" "quay.io/nick96/<< parameters.tag >>"
+              docker push "<< parameters.tag >>"
+            fi
+
+
 jobs:
-  api_build:
+  api_build_test:
     docker:
-      - image: circleci/openjdk:8-jdk
-    steps:
-      - checkout
-      - run:
-          name: Clean lint and test
-          command: ./gradlew clean ktlint test
-          working_directory: api/
-      - store_artifacts:
-          path: api/build/distributions
-          destination: jars
-      - store_artifacts:
-          path: api/build/resources
-          destination: resources
-
-  frontend_build:
-    docker:
-      - image: circleci/node:8
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: yarn install --frozen-lockfile
-          working_directory: frontend
-      - run:
-          name: Run tests
-          command: yarn test
-          working_directory: frontend
-
-  frontend_container:
-    docker:
-      - image: docker:17.05.0-ce-git
+      - image: docker:18.09.6-git
     steps:
       - checkout
       - setup_remote_docker
-      - run:
-          name: Build docker image
-          command: docker build -t quay.io/nick96/cub-tracking-frontend:${CIRCLE_SHA1} -f docker/Dockerfile .
-          working_directory: frontend
-      - run:
-          name: Run smoke tests
-          command: ./docker/smoke_test.sh
-          working_directory: frontend
+      - install_docker_compose
+      - api_run:
+          name: Build API test image and run unit tests
+          command: docker build -t api-testing -f docker/Dockerfile --target test .
+      - api_run:
+          name: Run integration tests
+          command: docker-compose -f docker/docker-compose.test.yml up
+      - api_run:
+          name: Build production container
+          command: docker build -t cub-tracking-api -f docker/Dockerfile .
+      - push_image:
+          name: cub-tracking-api
+          tag: cub-tracking-api:${CIRCLE_SHA1}
+          branch: master
+
+
+  frontend_build_test:
+    docker:
+      - image: docker:18.09.6-g
+    steps:
+      - checkout
+      - setup_remote_docker
+      - install_docker_compose
+      - frontend_run:
+          name: Build frontend test image and run unit tests
+          command: docker build -t frontend-testing -f docker/Dockerfile --target test .
+      - frontend_run:
+          name: Run integration tests
+          command: docker-compse -f docker/docker-compose.test.yml up
+      - frontend_run:
+          name: Build production container
+          command: docker build -t cub-tracking-frontend -f docker/Dockerfile .
+      - push_image:
+          name: cub-tracking-frontend
+          tag: cub-tracking-frontend:${CIRCLE_SHA1}
+          branch: master
 
 workflows:
   version: 2
   test-build:
     jobs:
-      - api_build
-      - frontend_build
-      - frontend_container:
-          requires:
-            - frontend_build
+      - api_build_test
+      - frontend_build_test
