@@ -14,33 +14,27 @@ commands:
   api_run:
     description: Run a command using api/ as the working directory
     parameters:
-      name:
-        type: string
       command:
         type: string
     steps:
       - run:
-          name: << parameters.name >>
           command: << parameters.command >>
           working_directory: api
 
   frontend_run:
     description: Run a command using frontend/ as the working directory
     parameters:
-      name:
-        type: string
       command:
         type: string
     steps:
       - run:
-          name: << parameters.name >>
           command: << paramters.command >>
           working_directory: frontend
 
   push_to_quayio:
     description: Push a docker image to quay.io
     parameters:
-      name:
+      container_name:
         type: string
       tag:
         type: string
@@ -67,16 +61,13 @@ jobs:
       - setup_remote_docker
       - install_docker_compose
       - api_run:
-          name: Build API test image and run unit tests
           command: docker build -t api-testing -f docker/Dockerfile --target test .
       - api_run:
-          name: Run integration tests
           command: docker-compose -f docker/docker-compose.test.yml up
       - api_run:
-          name: Build production container
           command: docker build -t cub-tracking-api -f docker/Dockerfile .
       - push_image:
-          name: cub-tracking-api
+          container_name: cub-tracking-api
           tag: cub-tracking-api:${CIRCLE_SHA1}
           branch: master
 
@@ -89,16 +80,13 @@ jobs:
       - setup_remote_docker
       - install_docker_compose
       - frontend_run:
-          name: Build frontend test image and run unit tests
           command: docker build -t frontend-testing -f docker/Dockerfile --target test .
       - frontend_run:
-          name: Run integration tests
           command: docker-compse -f docker/docker-compose.test.yml up
       - frontend_run:
-          name: Build production container
           command: docker build -t cub-tracking-frontend -f docker/Dockerfile .
       - push_image:
-          name: cub-tracking-frontend
+          container_name: cub-tracking-frontend
           tag: cub-tracking-frontend:${CIRCLE_SHA1}
           branch: master
 
