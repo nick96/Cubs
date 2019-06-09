@@ -20,9 +20,9 @@ commands:
         type: string
     steps:
       - run:
-        name: << parameters.name >>
-        command: << parameters.command >>
-        working_directory: api
+          name: << parameters.name >>
+          command: << parameters.command >>
+          working_directory: api
 
   frontend_run:
     description: Run a command using frontend/ as the working directory
