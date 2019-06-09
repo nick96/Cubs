@@ -47,7 +47,7 @@ commands:
             if [ "${CIRCLE_BRANCH}" == "<< parameters.branch >>" ]
             then
               docker login -u "${QUAYIO_USR}" -p "${QUAYIO_PSW}"
-              docker tag "<< parameters.name >>" "quay.io/nick96/<< parameters.tag >>"
+              docker tag "<< parameters.container_name >>" "quay.io/nick96/<< parameters.tag >>"
               docker push "<< parameters.tag >>"
             fi
 
