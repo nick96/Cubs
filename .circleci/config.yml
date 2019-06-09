@@ -28,7 +28,7 @@ commands:
         type: string
     steps:
       - run:
-          command: << paramters.command >>
+          command: << parameters.command >>
           working_directory: frontend
 
   push_to_quayio:
