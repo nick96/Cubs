@@ -2,10 +2,10 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="CubTracking.me.nspain.cubtracking.main" target="1.8" />
+      <module name="CubTracking.me.nspain.cubtracking.test" target="1.8" />
       <module name="me.nspain.cubtracking.integrationTests" target="1.8" />
       <module name="me.nspain.cubtracking.mai" target="1.8" />
-      <module name="me.nspain.cubtracking.main" target="1.8" />
-      <module name="me.nspain.cubtracking.test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
