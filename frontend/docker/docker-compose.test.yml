@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  frontend:
+    image: 'frontend-testing'
+  mountebank:
+    image: 'frontend-testing-mountebank'
+    ports:
+      - 2525:2525
+      - 8010:8010

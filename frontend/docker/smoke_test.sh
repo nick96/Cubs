@@ -2,11 +2,11 @@
 
 set -e
 
-image=${1:-frontend}
+image=${1:-cub-tracking-frontend}
 port=${2:-8080}
 
 printf "Starting container... "
-container_id=$(docker run -d -p $port:80 $image)
+container_id=$(docker run -d -p ${port}:80 ${image})
 if [[ $? -ne 0 ]]
 then
 	echo "FAIL"
@@ -17,7 +17,7 @@ echo "OK"
 
 cleanup() {
 	printf "Stopping $container_id... "
-	docker stop $container_id >/dev/null
+	docker stop ${container_id} >/dev/null
 	echo "OK"
 }
 
@@ -26,7 +26,7 @@ trap cleanup ERR
 
 printf "Checking container is running... "
 ps=$(docker ps --filter "id=$container_id" --format '{{ .ID }}')
-if [ -z "$ps" ]
+if [[ -z "$ps" ]]
 then
 	echo "FAIL"
 	echo "Container $container_id is not running" >/dev/stderr
@@ -36,7 +36,7 @@ echo "OK"
 
 printf "Checking container responds to GET request... "
 url="http://localhost:$port"
-curl --silent --fail $url >/dev/null
+curl --silent --fail ${url} >/dev/null
 if [[ $? -ne 0 ]]
 then
 	echo "FAIL"
