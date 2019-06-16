@@ -14,6 +14,8 @@ commands:
   api_run:
     description: Run a command using api/ as the working directory
     parameters:
+      description:
+        type: string
       command:
         type: string
     steps:
@@ -24,6 +26,8 @@ commands:
   frontend_run:
     description: Run a command using frontend/ as the working directory
     parameters:
+      description:
+        type: string
       command:
         type: string
     steps:
@@ -61,8 +65,10 @@ jobs:
       - setup_remote_docker
       - install_docker_compose
       - api_run:
+          description: Build test image and run unit tests
           command: docker build -t api-testing -f docker/Dockerfile --target test .
       - api_run:
+          description: Run integration tests
           command: docker-compose -f docker/docker-compose.test.yml up
       - api_run:
           command: docker build -t cub-tracking-api -f docker/Dockerfile .
@@ -70,7 +76,6 @@ jobs:
           container_name: cub-tracking-api
           tag: cub-tracking-api:${CIRCLE_SHA1}
           branch: master
-
 
   frontend_build_test:
     docker:
@@ -80,11 +85,19 @@ jobs:
       - setup_remote_docker
       - install_docker_compose
       - frontend_run:
+          description: Build test image and run unit tests
           command: docker build -t frontend-testing -f docker/Dockerfile --target test .
       - frontend_run:
+          description: Run integration tests
           command: docker-compse -f docker/docker-compose.test.yml up
       - frontend_run:
+          description: Build production image
           command: docker build -t cub-tracking-frontend -f docker/Dockerfile .
+      - run:
+          name: Install bash for smoke tests
+          command: apk add bash
+      - frontend_run:
+          command: ./docker/smoke_test.sh
       - push_to_quayio:
           container_name: cub-tracking-frontend
           tag: cub-tracking-frontend:${CIRCLE_SHA1}
