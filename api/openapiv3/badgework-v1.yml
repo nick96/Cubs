@@ -1,0 +1,346 @@
+openapi: 3.0.2
+
+info:
+  title: Cub Badgework Tracking API
+  version: 0.0.1
+  description: |
+    The Cub Badgework Tracking API is an API that provides endpoints that
+    allow us to keep track of how Cubs are progressing with their badgework.
+  license:
+    name: MIT
+    url: https://mit-license.org/
+
+servers:
+  - url: https://api.cubs.nspain.me/v1
+    description: Production server
+  - url: http://localhost:8081/v1
+    description: Local server
+
+# By default endpoints are secured by the authz_id security scheme
+security:
+  - authz_id: []
+
+paths:
+  /:
+    get:
+      operationId: APIDocs
+      description: Return the API documentation as defined here.
+      responses:
+        '200':
+          description: API documentation
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/google:
+    post:
+      operationId: authentication
+      security:
+        - google_authn_id: []
+      description: Authenticate and obtain API key
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Failed authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cubs:
+    get:
+      operationId: getCubs
+      description: Get a collection of all registered cubs with their associated badgework.
+      parameters:
+        - name: name
+          in: query
+          description: Name to filter the collection of cubs returned
+          required: false
+          style: form
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Registered cubs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cub'
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: postCubs
+      description: Register a new cub.
+      requestBody:
+        description: Cub to register
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCub'
+      responses:
+        '201':
+          description: Created cub
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cub'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cubs/{id}:
+    get:
+      operationId: getCub
+      description: Get a cub by ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the cub to fetch.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Registered cub
+          content:
+            application/json:
+                $ref: '#/components/schemas/Cub'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: putCub
+      description: Update the cub at ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the cub to fetch.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Updated cub
+          content:
+            application/json:
+                $ref: '#/components/schemas/Cub'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteCub
+      description: Delete the cub at ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the cub to fetch.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Deleted cub
+          content:
+            application/json:
+                $ref: '#/components/schemas/Cub'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    NewCub:
+      description: |
+        Object to create a new cub. This is really just a less strict `Cub` that doesn't
+        require fields for achievement awards.
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        bronzeBoomerang:
+          schema:
+            $ref: Boomerang
+        silverBoomerang:
+          schema:
+            $ref: Boomerang
+        goldBoomerang:
+          schema:
+            $ref: Boomerang
+        events:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Event'
+        achievementBadges:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AchievementBadge'
+        specialInterestBadges:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SpecialInterestBadge'
+    Cub:
+      allOf:
+        - $ref: '#/components/schemas/NewCub'
+        - required:
+            - id
+          properties:
+            id:
+              type: integer
+              format: int64
+              readOnly: true
+    AuthenticationResponse:
+      required:
+        - apiToken
+      properties:
+        apiToken:
+          description: API token for accessing `authz_id` secured endpoints
+          type: string
+          readOnly: true
+
+    # Sub schemas - not directory exposed in the API
+    Completable:
+      description: Fields required for an object to be completable
+      properties:
+        dateCompleted:
+          description: Date the object was completed on
+          type: string
+          format: date
+        signedOfBy:
+          description: Person who signed off the completable object
+          type: string
+    BoomerangTask:
+      description: Task that must be completed as part of a boomerang
+      allOf:
+        - $ref: '#/components/schemas/Completable'
+        - required:
+            - task
+            - description
+          properties:
+            task:
+               description: Task required to be performed
+               type: string
+            description:
+              description: Description of the task to be performed
+              type: string
+    Boomerang:
+      allOf:
+        - $ref: '#/components/schemas/Completable'
+        - required:
+            - name
+            - tasks
+        properties:
+            name:
+              description: Name of the boomerang
+              type: string
+            tasks:
+              description: Tasks required to complete the boomerang
+              type: array
+              items:
+                $ref: '#/components/schemas/BoomerangTask'
+            requiredTasks:
+              description: Array of tasks that are required to be completed. If omitted, all tasks are required.
+              type: array
+              items:
+                type: integer
+                format: int64
+            numRequiredTasks:
+              description: Total number of tasks required to be completed. This includes the tasks in `requiredTasks`
+              type: integer
+              format: int64
+    Badge:
+      allOf:
+        - $ref: '#/components/schemas/Completable'
+        - required:
+            - name
+            - components
+            - numRequiredComponents
+        properties:
+            name:
+              description: Name of the badge
+              type: string
+            components:
+              description: Components that make up the badge
+              type: array
+              items:
+                $ref: '#/components/schemas/BadgeComponent'
+    SpecialInterestBadge:
+      allOf:
+        $ref: '#/components/schemas/BadgeComponent'
+    AchievementBadge:
+      allOf:
+        - $ref: '#/components/schemas/Badge'
+        - level
+      properties:
+        level:
+          description: Badge level (1 or 2)
+          type: integer
+          format: int64
+          enum:
+            - 1
+            - 2
+    Event:
+      description: Event the cub has attended
+      allOf:
+        - $ref: '#/components/schemas/Completable'
+        - required:
+            - name
+          properties:
+            description: Name of the event attended
+            name:
+              type: string
+
+  securitySchemes:
+    authz_id:
+      type: apiKey
+      description: |
+        API key to authorise requests. If you don't have one, use one of the
+        authentication endpoints (below `/authorise`) to get it.
+      name: Authorization
+      in: header
+    google_authn_id:
+      type: apiKey
+      description: |
+        Validate the google OAuth2 token and exchange for an api key.
+      name: Authorization
+      in: header
